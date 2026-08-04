@@ -1,0 +1,13 @@
+[Desktop Entry]
+Type=Application
+Name=Brewdoro
+Comment=Minimal Pomodoro timer
+Comment[ru]=Минималистичный Pomodoro-таймер
+Exec=brewdoro
+Icon=ru.brewdoro.timer
+Terminal=false
+Categories=Utility;GTK;
+Keywords=Pomodoro;Timer;Focus;
+Keywords[ru]=Pomodoro;Таймер;Фокус;
+StartupNotify=true
+DBusActivatable=false

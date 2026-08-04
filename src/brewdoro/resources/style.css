@@ -1,0 +1,117 @@
+@define-color brewdoro_window_bg #24283b;
+@define-color brewdoro_header_bg #1f2335;
+@define-color brewdoro_surface_bg #292e42;
+@define-color brewdoro_surface_hover #343a55;
+@define-color brewdoro_surface_active #394b70;
+@define-color brewdoro_text_primary #c0caf5;
+@define-color brewdoro_text_secondary #a9b1d6;
+@define-color brewdoro_text_muted #737aa2;
+@define-color brewdoro_accent_bg #3d59a1;
+@define-color brewdoro_accent_hover #4d6cb3;
+@define-color brewdoro_accent_active #394b70;
+@define-color brewdoro_accent_light #7aa2f7;
+@define-color brewdoro_accent_text #f4f6ff;
+@define-color brewdoro_cup_outline #737aa2;
+@define-color brewdoro_focus_ring #7aa2f7;
+
+.app-background {
+  color: @brewdoro_text_primary;
+  background-color: @brewdoro_window_bg;
+}
+
+.flat-header {
+  background-color: @brewdoro_header_bg;
+  box-shadow: none;
+}
+
+.mode-label {
+  color: @brewdoro_text_secondary;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 1.6px;
+}
+
+.timer-label {
+  color: @brewdoro_text_primary;
+  font-size: 68px;
+  font-weight: 300;
+  font-feature-settings: "tnum" 1;
+  letter-spacing: -2px;
+}
+
+.coffee-cup {
+  color: @brewdoro_cup_outline;
+  background: transparent;
+}
+
+.primary-button {
+  min-height: 48px;
+  border-radius: 12px;
+  border: 1px solid alpha(@brewdoro_accent_light, 0.45);
+  background-color: alpha(@brewdoro_accent_bg, 0.28);
+  color: @brewdoro_text_primary;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.primary-button:hover {
+  border-color: alpha(@brewdoro_accent_light, 0.62);
+  background-color: alpha(@brewdoro_accent_hover, 0.40);
+}
+
+.primary-button:active {
+  border-color: alpha(@brewdoro_accent_light, 0.72);
+  background-color: alpha(@brewdoro_accent_active, 0.55);
+}
+
+.reset-button {
+  color: @brewdoro_text_muted;
+}
+
+.preset-button {
+  min-height: 34px;
+  padding: 0 10px;
+  border-radius: 10px;
+  border: 1px solid transparent;
+  color: @brewdoro_text_secondary;
+  background-color: @brewdoro_surface_bg;
+  box-shadow: none;
+}
+
+.preset-button:hover {
+  background-color: @brewdoro_surface_hover;
+}
+
+.preset-button:active {
+  background-color: @brewdoro_surface_active;
+}
+
+.preset-button:checked {
+  color: @brewdoro_text_primary;
+  border-color: alpha(@brewdoro_accent_light, 0.45);
+  background-color: alpha(@brewdoro_accent_bg, 0.28);
+  font-weight: 700;
+}
+
+.preset-button:checked:hover {
+  border-color: alpha(@brewdoro_accent_light, 0.62);
+  background-color: alpha(@brewdoro_accent_hover, 0.40);
+}
+
+.preset-button:checked:active {
+  border-color: alpha(@brewdoro_accent_light, 0.72);
+  background-color: alpha(@brewdoro_accent_active, 0.55);
+}
+
+.primary-button:focus-visible,
+.reset-button:focus-visible,
+.preset-button:focus-visible {
+  outline-color: @brewdoro_focus_ring;
+  outline-style: solid;
+  outline-width: 2px;
+  outline-offset: 2px;
+}
+
+.preset-button:disabled {
+  opacity: 0.48;
+}

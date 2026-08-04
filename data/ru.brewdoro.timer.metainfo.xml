@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>ru.brewdoro.timer</id>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>MIT</project_license>
+  <name>Brewdoro</name>
+  <summary>A minimal Pomodoro timer</summary>
+  <summary xml:lang="ru">Минималистичный Pomodoro-таймер</summary>
+  <description>
+    <p>
+      Brewdoro is a focused desktop timer with focus, short break, and long
+      break modes. Its animated coffee cup shows the progress of each session.
+    </p>
+    <p xml:lang="ru">
+      Brewdoro — компактный таймер с режимами фокуса, короткого и длинного
+      перерыва. Анимированная чашка кофе показывает ход текущей сессии.
+    </p>
+  </description>
+  <launchable type="desktop-id">ru.brewdoro.timer.desktop</launchable>
+  <developer id="ru.brewdoro">
+    <name>Brewdoro contributors</name>
+  </developer>
+  <categories>
+    <category>Utility</category>
+  </categories>
+  <keywords>
+    <keyword>Pomodoro</keyword>
+    <keyword>Timer</keyword>
+    <keyword>Focus</keyword>
+  </keywords>
+  <supports>
+    <control>keyboard</control>
+    <control>pointing</control>
+    <control>touch</control>
+  </supports>
+  <content_rating type="oars-1.1" />
+  <releases>
+    <release version="0.2.0" date="2026-08-04">
+      <description>
+        <p>Initial distributable release.</p>
+      </description>
+    </release>
+  </releases>
+</component>
