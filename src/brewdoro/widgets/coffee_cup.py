@@ -10,6 +10,8 @@ gi.require_foreign("cairo")
 
 from gi.repository import Gtk  # noqa: E402
 
+from brewdoro.coffee_geometry import draw_liquid_path
+
 
 class CoffeeCup(Gtk.DrawingArea):
     """Minimal Cairo-rendered cup whose liquid level represents progress."""
@@ -60,7 +62,6 @@ class CoffeeCup(Gtk.DrawingArea):
             liquid_top = inner_bottom - liquid_height
             liquid_x = cup_x + 4.0
             liquid_width = cup_width - 8.0
-            top_radius = min(6.0, liquid_height / 2.0)
             self._liquid_path(
                 context,
                 liquid_x,
@@ -70,13 +71,6 @@ class CoffeeCup(Gtk.DrawingArea):
             )
             context.set_source_rgba(0.878, 0.686, 0.408, 1.0)
             context.fill()
-
-            if self._liquid_level < 0.995:
-                context.move_to(liquid_x + top_radius, liquid_top)
-                context.line_to(liquid_x + liquid_width - top_radius, liquid_top)
-                context.set_source_rgba(0.941, 0.788, 0.471, 1.0)
-                context.set_line_width(1.5)
-                context.stroke()
         context.restore()
 
         foreground = self.get_color()
@@ -106,36 +100,7 @@ class CoffeeCup(Gtk.DrawingArea):
         width: float,
         height: float,
     ) -> None:
-        top_radius = min(6.0, height / 2.0)
-        bottom_radius = min(10.0, height / 2.0)
-        right = x + width
-        bottom = y + height
-
-        context.new_sub_path()
-        context.move_to(x + top_radius, y)
-        context.line_to(right - top_radius, y)
-        context.curve_to(right, y, right, y, right, y + top_radius)
-        context.line_to(right, bottom - bottom_radius)
-        context.curve_to(
-            right,
-            bottom,
-            right - bottom_radius,
-            bottom,
-            right - bottom_radius,
-            bottom,
-        )
-        context.line_to(x + bottom_radius, bottom)
-        context.curve_to(
-            x + bottom_radius,
-            bottom,
-            x,
-            bottom,
-            x,
-            bottom - bottom_radius,
-        )
-        context.line_to(x, y + top_radius)
-        context.curve_to(x, y, x, y, x + top_radius, y)
-        context.close_path()
+        draw_liquid_path(context, x, y, width, height)
 
     @staticmethod
     def _cup_body_path(
