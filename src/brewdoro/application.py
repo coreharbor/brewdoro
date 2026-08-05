@@ -13,6 +13,7 @@ gi.require_foreign("cairo")
 from gi.repository import Adw, Gdk, Gtk  # noqa: E402
 
 from brewdoro.notifications import NotificationService  # noqa: E402
+from brewdoro.sounds import SoundService  # noqa: E402
 from brewdoro.timer import BrewdoroTimer  # noqa: E402
 from brewdoro.window import BrewdoroWindow  # noqa: E402
 
@@ -35,7 +36,8 @@ class BrewdoroApplication(Adw.Application):
         if self._window is None:
             timer = BrewdoroTimer()
             notifications = NotificationService(self)
-            self._window = BrewdoroWindow(self, timer, notifications)
+            sounds = SoundService()
+            self._window = BrewdoroWindow(self, timer, notifications, sounds)
         self._window.present()
 
     def _load_css(self) -> None:

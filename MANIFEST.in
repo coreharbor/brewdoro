@@ -2,5 +2,5 @@ include LICENSE
 include Makefile
 recursive-include data *.desktop *.xml *.svg
 recursive-include flatpak *.yml
-recursive-include src/brewdoro/resources *.css
+recursive-include src/brewdoro/resources *.css *.wav
 recursive-include tests *.py

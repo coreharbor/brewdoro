@@ -7,6 +7,7 @@ import gi
 
 from brewdoro.models import TIMER_MODES, TimerMode, TimerState
 from brewdoro.notifications import NotificationService
+from brewdoro.sounds import SoundService
 from brewdoro.timer import BrewdoroTimer
 
 gi.require_version("Gtk", "4.0")
@@ -28,6 +29,7 @@ class BrewdoroWindow(Adw.ApplicationWindow):
         application: Adw.Application,
         timer: BrewdoroTimer,
         notifications: NotificationService,
+        sounds: SoundService,
     ) -> None:
         super().__init__(application=application)
         self.set_title("Brewdoro")
@@ -36,6 +38,7 @@ class BrewdoroWindow(Adw.ApplicationWindow):
 
         self._timer = timer
         self._notifications = notifications
+        self._sounds = sounds
         self._timeout_id: int | None = None
 
         self._mode_label = Gtk.Label(label=self._timer.mode.label)
@@ -160,6 +163,7 @@ class BrewdoroWindow(Adw.ApplicationWindow):
         self._primary_button.set_label("Начать снова")
         self._set_presets_sensitive(True)
         self._notifications.send_finished(self._timer.mode)
+        self._sounds.play_finished()
 
     def _on_reset_clicked(self, _button: Gtk.Button) -> None:
         self._remove_timeout()

@@ -103,6 +103,14 @@ class BrewdoroTimerTests(unittest.TestCase):
         self.assertEqual(self.timer.state, TimerState.RUNNING)
         self.assertEqual(self.timer.remaining_seconds, self.timer.total_seconds)
 
+    def test_finish_event_is_emitted_only_once(self) -> None:
+        self.timer.start()
+        self.clock.advance(self.timer.total_seconds)
+
+        self.assertTrue(self.timer.tick())
+        self.assertFalse(self.timer.tick())
+        self.assertFalse(self.timer.pause())
+
 
 if __name__ == "__main__":
     unittest.main()
