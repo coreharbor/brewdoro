@@ -21,6 +21,7 @@ class SoundService:
 
     def __init__(self) -> None:
         self._player: Gtk.MediaFile | None = None
+        self._stream: Gio.MemoryInputStream | None = None
 
     def play_finished(self) -> None:
         try:
@@ -30,6 +31,10 @@ class SoundService:
             player = Gtk.MediaFile.new_for_input_stream(stream)
             player.set_volume(FINISHED_VOLUME)
             player.play()
+            # Gtk does not take ownership of the input stream. Keep it alive for
+            # the asynchronous playback instead of letting Python release it
+            # when this method returns.
+            self._stream = stream
             self._player = player
         except Exception:
             LOGGER.exception("Could not play the timer completion sound")
