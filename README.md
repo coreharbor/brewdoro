@@ -118,9 +118,7 @@ Application metadata and desktop integration files are located in [`data/`](data
 
 ## 🤝 Contributing
 
-Contributions are welcome.
-
-If you find a bug, have an idea for Brewdoro, or want to improve a translation, feel free to open an issue or submit a pull request.
+If you find a bug, have an idea for Brewdoro, or want to improve a translation, read the [contribution guide](CONTRIBUTING.md) and open an issue or pull request.
 
 ## ⭐ Support Brewdoro
 
