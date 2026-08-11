@@ -1,4 +1,4 @@
-app-id: ru.brewdoro.timer
+app-id: io.github.coreharbor.Brewdoro
 runtime: org.gnome.Platform
 runtime-version: "50"
 sdk: org.gnome.Sdk
@@ -16,10 +16,10 @@ modules:
     buildsystem: simple
     build-commands:
       - python3 -m pip install --no-deps --no-build-isolation --prefix=${FLATPAK_DEST} .
-      - install -Dm0644 data/ru.brewdoro.timer.desktop ${FLATPAK_DEST}/share/applications/ru.brewdoro.timer.desktop
-      - install -Dm0644 data/ru.brewdoro.timer.metainfo.xml ${FLATPAK_DEST}/share/metainfo/ru.brewdoro.timer.metainfo.xml
-      - install -Dm0644 data/icons/hicolor/scalable/apps/ru.brewdoro.timer.svg ${FLATPAK_DEST}/share/icons/hicolor/scalable/apps/ru.brewdoro.timer.svg
-      - install -Dm0644 LICENSE ${FLATPAK_DEST}/share/licenses/ru.brewdoro.timer/LICENSE
+      - install -Dm0644 data/io.github.coreharbor.Brewdoro.desktop ${FLATPAK_DEST}/share/applications/io.github.coreharbor.Brewdoro.desktop
+      - install -Dm0644 data/io.github.coreharbor.Brewdoro.metainfo.xml ${FLATPAK_DEST}/share/metainfo/io.github.coreharbor.Brewdoro.metainfo.xml
+      - install -Dm0644 data/icons/hicolor/scalable/apps/io.github.coreharbor.Brewdoro.svg ${FLATPAK_DEST}/share/icons/hicolor/scalable/apps/io.github.coreharbor.Brewdoro.svg
+      - install -Dm0644 LICENSE ${FLATPAK_DEST}/share/licenses/io.github.coreharbor.Brewdoro/LICENSE
     sources:
       - type: dir
         path: ..

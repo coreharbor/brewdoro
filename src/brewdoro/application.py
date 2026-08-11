@@ -21,7 +21,7 @@ from brewdoro.timer import BrewdoroTimer  # noqa: E402
 from brewdoro.window import BrewdoroWindow  # noqa: E402
 
 
-APPLICATION_ID: Final = "ru.brewdoro.timer"
+APPLICATION_ID: Final = "io.github.coreharbor.Brewdoro"
 
 
 class BrewdoroApplication(Adw.Application):

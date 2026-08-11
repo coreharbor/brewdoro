@@ -61,13 +61,19 @@ cd brewdoro
 Build and install:
 
 ```bash
-flatpak-builder --user --install --force-clean build-dir flatpak/ru.brewdoro.timer.yml
+flatpak-builder --user --install --force-clean build-dir flatpak/io.github.coreharbor.Brewdoro.yml
 ```
 
 Run:
 
 ```bash
-flatpak run ru.brewdoro.timer
+flatpak run io.github.coreharbor.Brewdoro
+```
+
+Versions up to `0.4.3` used the old Flatpak ID. If it is still installed, remove that separate package once:
+
+```bash
+flatpak uninstall ru.brewdoro.timer
 ```
 
 ## 🚀 Usage

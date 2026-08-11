@@ -1,8 +1,8 @@
 VENV ?= .venv
 PYTHON ?= $(VENV)/bin/python
 FLATPAK_BUILD_DIR ?= .flatpak-build
-APP_ID := ru.brewdoro.timer
-LEGACY_APP_ID := ru.pomidor.timer
+APP_ID := io.github.coreharbor.Brewdoro
+LEGACY_APP_IDS := ru.brewdoro.timer ru.pomidor.timer
 
 .PHONY: run test check install-editable install-user uninstall-user flatpak flatpak-run
 
@@ -34,18 +34,22 @@ install-user: install-editable
 		$(HOME)/.local/share/icons/hicolor/scalable/apps/$(APP_ID).svg
 	install -m 0644 data/$(APP_ID).metainfo.xml \
 		$(HOME)/.local/share/metainfo/$(APP_ID).metainfo.xml
-	-rm -f $(HOME)/.local/share/applications/$(LEGACY_APP_ID).desktop
-	-rm -f $(HOME)/.local/share/icons/hicolor/scalable/apps/$(LEGACY_APP_ID).svg
-	-rm -f $(HOME)/.local/share/metainfo/$(LEGACY_APP_ID).metainfo.xml
+	for legacy_id in $(LEGACY_APP_IDS); do \
+		rm -f $(HOME)/.local/share/applications/$$legacy_id.desktop; \
+		rm -f $(HOME)/.local/share/icons/hicolor/scalable/apps/$$legacy_id.svg; \
+		rm -f $(HOME)/.local/share/metainfo/$$legacy_id.metainfo.xml; \
+	done
 	-update-desktop-database $(HOME)/.local/share/applications
 
 uninstall-user:
 	rm -f $(HOME)/.local/share/applications/$(APP_ID).desktop
 	rm -f $(HOME)/.local/share/icons/hicolor/scalable/apps/$(APP_ID).svg
 	rm -f $(HOME)/.local/share/metainfo/$(APP_ID).metainfo.xml
-	-rm -f $(HOME)/.local/share/applications/$(LEGACY_APP_ID).desktop
-	-rm -f $(HOME)/.local/share/icons/hicolor/scalable/apps/$(LEGACY_APP_ID).svg
-	-rm -f $(HOME)/.local/share/metainfo/$(LEGACY_APP_ID).metainfo.xml
+	for legacy_id in $(LEGACY_APP_IDS); do \
+		rm -f $(HOME)/.local/share/applications/$$legacy_id.desktop; \
+		rm -f $(HOME)/.local/share/icons/hicolor/scalable/apps/$$legacy_id.svg; \
+		rm -f $(HOME)/.local/share/metainfo/$$legacy_id.metainfo.xml; \
+	done
 	-update-desktop-database $(HOME)/.local/share/applications
 
 flatpak:

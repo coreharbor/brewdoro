@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <component type="desktop-application">
-  <id>ru.brewdoro.timer</id>
+  <id>io.github.coreharbor.Brewdoro</id>
   <metadata_license>CC0-1.0</metadata_license>
   <project_license>MIT</project_license>
   <name>Brewdoro</name>
@@ -21,10 +21,20 @@
       动画咖啡杯会显示当前计时进度。
     </p>
   </description>
-  <launchable type="desktop-id">ru.brewdoro.timer.desktop</launchable>
-  <developer id="ru.brewdoro">
-    <name>Brewdoro contributors</name>
+  <launchable type="desktop-id">io.github.coreharbor.Brewdoro.desktop</launchable>
+  <developer id="io.github.coreharbor">
+    <name>coreharbor</name>
   </developer>
+  <url type="homepage">https://github.com/coreharbor/brewdoro</url>
+  <url type="bugtracker">https://github.com/coreharbor/brewdoro/issues</url>
+  <url type="vcs-browser">https://github.com/coreharbor/brewdoro</url>
+  <url type="contribute">https://github.com/coreharbor/brewdoro/blob/main/CONTRIBUTING.md</url>
+  <provides>
+    <id>ru.brewdoro.timer.desktop</id>
+  </provides>
+  <replaces>
+    <id>ru.brewdoro.timer</id>
+  </replaces>
   <categories>
     <category>Utility</category>
   </categories>
@@ -39,7 +49,18 @@
     <control>touch</control>
   </supports>
   <content_rating type="oars-1.1" />
+  <screenshots>
+    <screenshot type="default">
+      <image>https://raw.githubusercontent.com/coreharbor/brewdoro/v0.5.0/docs/images/brewdoro.png</image>
+      <caption>Brewdoro running a focus session</caption>
+    </screenshot>
+  </screenshots>
   <releases>
+    <release version="0.5.0" date="2026-08-11">
+      <description>
+        <p>Adopts the GitHub-based application ID io.github.coreharbor.Brewdoro.</p>
+      </description>
+    </release>
     <release version="0.4.3" date="2026-08-11">
       <description>
         <p>Lets an already reset timer clear Pomodoro session progress directly.</p>
