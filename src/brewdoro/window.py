@@ -6,18 +6,22 @@ from typing import Final
 
 import gi
 
+from brewdoro.cycle import PomodoroCycle
 from brewdoro.i18n import Language, LanguageStore, Strings, strings_for
 from brewdoro.models import TIMER_MODES, TimerMode, TimerState
 from brewdoro.notifications import NotificationService
+from brewdoro.session import SavedSession, SessionStore
+from brewdoro.settings import AppSettings, SettingsStore
 from brewdoro.sounds import SoundService
 from brewdoro.timer import BrewdoroTimer
 
 gi.require_version("Gtk", "4.0")
 gi.require_version("Adw", "1")
 
-from gi.repository import Adw, GLib, Gtk  # noqa: E402
+from gi.repository import Adw, Gdk, GLib, Gtk  # noqa: E402
 
 from brewdoro.widgets import CoffeeCup  # noqa: E402
+from brewdoro.widgets.settings_menu import SettingsMenu  # noqa: E402
 
 
 TICK_INTERVAL_MS: Final = 100
@@ -34,6 +38,11 @@ class BrewdoroWindow(Adw.ApplicationWindow):
         notifications: NotificationService,
         sounds: SoundService,
         language_store: LanguageStore | None = None,
+        settings: AppSettings | None = None,
+        settings_store: SettingsStore | None = None,
+        session_store: SessionStore | None = None,
+        cycle: PomodoroCycle | None = None,
+        restored_finished: bool = False,
     ) -> None:
         super().__init__(application=application)
         self.set_title("Brewdoro")
@@ -47,8 +56,14 @@ class BrewdoroWindow(Adw.ApplicationWindow):
         self._language_store = language_store or LanguageStore()
         self._language = self._language_store.load()
         self._strings: Strings = strings_for(self._language)
+        self._settings_store = settings_store or SettingsStore()
+        self._settings = settings or self._settings_store.load()
+        self._session_store = session_store or SessionStore()
+        self._cycle = cycle or PomodoroCycle()
+        self._syncing_presets = False
 
         self._mode_label = Gtk.Label()
+        self._cycle_label = Gtk.Label()
         self._timer_label = Gtk.Label()
         self._coffee_cup = CoffeeCup()
         self._primary_button = Gtk.Button()
@@ -56,11 +71,22 @@ class BrewdoroWindow(Adw.ApplicationWindow):
         self._language_button = Gtk.MenuButton()
         self._language_popover = Gtk.Popover()
         self._language_option_buttons: dict[Language, Gtk.Button] = {}
+        self._settings_menu = SettingsMenu(
+            self._settings,
+            self._on_settings_changed,
+        )
         self._preset_buttons: list[Gtk.ToggleButton] = []
 
         self._build_ui()
         self._update_text()
         self._update_time_and_cup()
+        self._sync_selected_preset()
+        self._set_controls_sensitive()
+        self._install_keyboard_shortcuts()
+        if self._timer.state is TimerState.RUNNING:
+            self._timeout_id = GLib.timeout_add(TICK_INTERVAL_MS, self._on_tick)
+        elif restored_finished:
+            GLib.idle_add(self._show_restored_finished)
         self.connect("close-request", self._on_close_request)
 
     def _build_ui(self) -> None:
@@ -72,6 +98,7 @@ class BrewdoroWindow(Adw.ApplicationWindow):
         header.add_css_class("flat-header")
         header.set_show_title(False)
         self._build_language_menu(header)
+        header.pack_end(self._settings_menu)
         root.append(header)
 
         content = Gtk.Box(
@@ -88,6 +115,10 @@ class BrewdoroWindow(Adw.ApplicationWindow):
 
         self._mode_label.add_css_class("mode-label")
         content.append(self._mode_label)
+
+        self._cycle_label.add_css_class("cycle-label")
+        self._cycle_label.set_margin_top(4)
+        content.append(self._cycle_label)
 
         self._timer_label.add_css_class("timer-label")
         self._timer_label.set_margin_top(12)
@@ -131,8 +162,6 @@ class BrewdoroWindow(Adw.ApplicationWindow):
             presets_box.append(button)
             self._preset_buttons.append(button)
 
-        self._preset_buttons[0].set_active(True)
-
     def _build_language_menu(self, header: Adw.HeaderBar) -> None:
         self._language_button.add_css_class("flat")
         self._language_button.add_css_class("language-button")
@@ -172,20 +201,36 @@ class BrewdoroWindow(Adw.ApplicationWindow):
             self._update_text()
         self._language_popover.popdown()
 
-    def _on_primary_clicked(self, _button: Gtk.Button) -> None:
+    def _on_settings_changed(self, settings: AppSettings) -> None:
+        durations_changed = settings.durations != self._settings.durations
+        cycle_was_disabled = self._settings.cycle_enabled and not settings.cycle_enabled
+        self._settings = settings
+        if cycle_was_disabled:
+            self._cycle.reset()
+        if durations_changed and not self._timer.update_durations(settings.durations):
+            LOGGER.warning("Ignored duration change during an active session")
+            return
+        self._save_settings()
+        self._update_text()
+        self._update_time_and_cup()
+        self._save_session()
+
+    def _on_primary_clicked(self, _button: Gtk.Button | None) -> None:
         if self._timer.state is TimerState.RUNNING:
             self._pause_timer()
         else:
             self._start_timer()
 
-    def _start_timer(self) -> None:
+    def _start_timer(self, withdraw_notification: bool = True) -> None:
         if not self._timer.start():
             return
         self._remove_timeout()
-        self._notifications.withdraw_finished()
+        if withdraw_notification:
+            self._notifications.withdraw_finished()
         self._update_time_and_cup()
         self._update_text()
-        self._set_presets_sensitive(False)
+        self._set_controls_sensitive()
+        self._save_session()
         self._timeout_id = GLib.timeout_add(TICK_INTERVAL_MS, self._on_tick)
 
     def _pause_timer(self) -> None:
@@ -196,6 +241,8 @@ class BrewdoroWindow(Adw.ApplicationWindow):
             self._show_finished()
             return
         self._update_text()
+        self._set_controls_sensitive()
+        self._save_session()
 
     def _on_tick(self) -> bool:
         if self._timer.state is not TimerState.RUNNING:
@@ -211,28 +258,51 @@ class BrewdoroWindow(Adw.ApplicationWindow):
 
     def _show_finished(self) -> None:
         self._remove_timeout()
-        self._update_text()
-        self._set_presets_sensitive(True)
-        self._notifications.send_finished(self._timer.mode, self._language)
-        self._sounds.play_finished()
+        finished_mode = self._timer.mode
+        self._notifications.send_finished(finished_mode, self._language)
+        if self._settings.sound_enabled:
+            self._sounds.play_finished()
 
-    def _on_reset_clicked(self, _button: Gtk.Button) -> None:
+        if self._settings.cycle_enabled:
+            next_mode = self._cycle.complete(finished_mode)
+            self._timer.select_mode(next_mode)
+            self._sync_selected_preset()
+            if self._settings.auto_start_enabled:
+                self._start_timer(withdraw_notification=False)
+                return
+
+        self._update_text()
+        self._update_time_and_cup()
+        self._set_controls_sensitive()
+        self._save_session()
+
+    def _show_restored_finished(self) -> bool:
+        self._show_finished()
+        return GLib.SOURCE_REMOVE
+
+    def _on_reset_clicked(self, _button: Gtk.Button | None) -> None:
         self._remove_timeout()
         self._notifications.withdraw_finished()
         self._timer.reset()
         self._update_time_and_cup()
         self._update_text()
-        self._set_presets_sensitive(True)
+        self._set_controls_sensitive()
+        self._save_session()
 
     def _on_preset_toggled(
         self,
         button: Gtk.ToggleButton,
         mode: TimerMode,
     ) -> None:
-        if not button.get_active() or not self._timer.select_mode(mode):
+        if (
+            self._syncing_presets
+            or not button.get_active()
+            or not self._timer.select_mode(mode)
+        ):
             return
         self._update_text()
         self._update_time_and_cup()
+        self._save_session()
 
     def _update_text(self) -> None:
         self._mode_label.set_label(self._strings.mode_label(self._timer.mode))
@@ -242,15 +312,21 @@ class BrewdoroWindow(Adw.ApplicationWindow):
         self._reset_button.set_label(self._strings.reset)
         self._language_button.set_label(self._language.short_label)
         self._language_button.set_tooltip_text(self._strings.change_language)
+        self._settings_menu.update_text(self._strings)
 
         for button, mode in zip(self._preset_buttons, TIMER_MODES, strict=True):
-            button.set_label(self._strings.preset_label(mode.minutes))
+            button.set_label(
+                self._strings.preset_label(
+                    self._settings.durations.minutes_for(mode),
+                ),
+            )
 
         for language, button in self._language_option_buttons.items():
             if language is self._language:
                 button.add_css_class("selected-language")
             else:
                 button.remove_css_class("selected-language")
+        self._update_cycle_label()
 
     def _update_time_and_cup(self) -> None:
         visible_seconds = max(0, math.ceil(self._timer.remaining_seconds))
@@ -258,9 +334,86 @@ class BrewdoroWindow(Adw.ApplicationWindow):
         self._timer_label.set_label(f"{minutes:02d}:{seconds:02d}")
         self._coffee_cup.set_liquid_level(self._timer.liquid_level)
 
-    def _set_presets_sensitive(self, sensitive: bool) -> None:
+    def _update_cycle_label(self) -> None:
+        self._cycle_label.set_visible(self._settings.cycle_enabled)
+        if self._settings.cycle_enabled:
+            self._cycle_label.set_label(
+                self._strings.cycle_progress.format(
+                    position=self._cycle.position_for(self._timer.mode),
+                ),
+            )
+
+    def _set_controls_sensitive(self) -> None:
+        sensitive = not self._timer.has_active_session
         for button in self._preset_buttons:
             button.set_sensitive(sensitive)
+        self._settings_menu.set_sensitive(sensitive)
+
+    def _sync_selected_preset(self) -> None:
+        self._syncing_presets = True
+        try:
+            mode_index = TIMER_MODES.index(self._timer.mode)
+            self._preset_buttons[mode_index].set_active(True)
+        finally:
+            self._syncing_presets = False
+
+    def _install_keyboard_shortcuts(self) -> None:
+        controller = Gtk.EventControllerKey()
+        controller.set_propagation_phase(Gtk.PropagationPhase.CAPTURE)
+        controller.connect("key-pressed", self._on_key_pressed)
+        self.add_controller(controller)
+
+    def _on_key_pressed(
+        self,
+        _controller: Gtk.EventControllerKey,
+        keyval: int,
+        _keycode: int,
+        state: Gdk.ModifierType,
+    ) -> bool:
+        blocked_modifiers = (
+            Gdk.ModifierType.CONTROL_MASK
+            | Gdk.ModifierType.ALT_MASK
+            | Gdk.ModifierType.SUPER_MASK
+        )
+        if (
+            state & blocked_modifiers
+            or self._settings_menu.popover_visible
+            or self._language_popover.get_visible()
+        ):
+            return False
+
+        if keyval == Gdk.KEY_space:
+            self._on_primary_clicked(None)
+            return True
+        if keyval == Gdk.KEY_r:
+            self._on_reset_clicked(None)
+            return True
+
+        key_modes = {
+            Gdk.KEY_1: TimerMode.FOCUS,
+            Gdk.KEY_2: TimerMode.SHORT_BREAK,
+            Gdk.KEY_3: TimerMode.LONG_BREAK,
+            Gdk.KEY_KP_1: TimerMode.FOCUS,
+            Gdk.KEY_KP_2: TimerMode.SHORT_BREAK,
+            Gdk.KEY_KP_3: TimerMode.LONG_BREAK,
+        }
+        mode = key_modes.get(keyval)
+        if mode is None or self._timer.has_active_session:
+            return False
+        self._preset_buttons[TIMER_MODES.index(mode)].set_active(True)
+        return True
+
+    def _save_settings(self) -> None:
+        if not self._settings_store.save(self._settings):
+            LOGGER.warning("Could not save application settings")
+
+    def _save_session(self) -> None:
+        session = SavedSession(
+            timer=self._timer.snapshot(),
+            completed_focus_sessions=self._cycle.completed_focus_sessions,
+        )
+        if not self._session_store.save(session):
+            LOGGER.warning("Could not save timer session")
 
     def _remove_timeout(self) -> None:
         if self._timeout_id is not None:
@@ -268,6 +421,7 @@ class BrewdoroWindow(Adw.ApplicationWindow):
             self._timeout_id = None
 
     def _on_close_request(self, _window: Adw.ApplicationWindow) -> bool:
+        self._save_session()
         self._remove_timeout()
         self._sounds.close()
         return False

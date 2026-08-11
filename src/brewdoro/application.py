@@ -13,6 +13,9 @@ gi.require_foreign("cairo")
 from gi.repository import Adw, Gdk, Gtk  # noqa: E402
 
 from brewdoro.notifications import NotificationService  # noqa: E402
+from brewdoro.cycle import PomodoroCycle  # noqa: E402
+from brewdoro.session import SessionStore  # noqa: E402
+from brewdoro.settings import SettingsStore  # noqa: E402
 from brewdoro.sounds import SoundService  # noqa: E402
 from brewdoro.timer import BrewdoroTimer  # noqa: E402
 from brewdoro.window import BrewdoroWindow  # noqa: E402
@@ -34,10 +37,30 @@ class BrewdoroApplication(Adw.Application):
 
     def do_activate(self) -> None:
         if self._window is None:
-            timer = BrewdoroTimer()
+            settings_store = SettingsStore()
+            settings = settings_store.load()
+            session_store = SessionStore()
+            saved_session = session_store.load()
+            timer = BrewdoroTimer(durations=settings.durations)
+            cycle = PomodoroCycle(
+                saved_session.completed_focus_sessions if saved_session else 0,
+            )
+            restored_finished = (
+                timer.restore(saved_session.timer) if saved_session else False
+            )
             notifications = NotificationService(self)
             sounds = SoundService()
-            self._window = BrewdoroWindow(self, timer, notifications, sounds)
+            self._window = BrewdoroWindow(
+                self,
+                timer,
+                notifications,
+                sounds,
+                settings=settings,
+                settings_store=settings_store,
+                session_store=session_store,
+                cycle=cycle,
+                restored_finished=restored_finished,
+            )
         self._window.present()
 
     def _load_css(self) -> None:

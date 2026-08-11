@@ -2,8 +2,17 @@ from __future__ import annotations
 
 import time
 from collections.abc import Callable
+from dataclasses import dataclass
 
-from brewdoro.models import TimerMode, TimerState
+from brewdoro.models import TimerDurations, TimerMode, TimerState
+
+
+@dataclass(frozen=True)
+class TimerSnapshot:
+    mode: TimerMode
+    state: TimerState
+    remaining_seconds: float
+    deadline: float | None
 
 
 class BrewdoroTimer:
@@ -11,13 +20,15 @@ class BrewdoroTimer:
 
     def __init__(
         self,
-        clock: Callable[[], float] = time.monotonic,
+        clock: Callable[[], float] = time.time,
         mode: TimerMode = TimerMode.FOCUS,
+        durations: TimerDurations | None = None,
     ) -> None:
         self._clock = clock
+        self._durations = durations or TimerDurations()
         self._mode = mode
         self._state = TimerState.IDLE
-        self._remaining_seconds = float(mode.seconds)
+        self._remaining_seconds = float(self.total_seconds)
         self._deadline: float | None = None
 
     @property
@@ -30,7 +41,7 @@ class BrewdoroTimer:
 
     @property
     def total_seconds(self) -> int:
-        return self._mode.seconds
+        return self._durations.seconds_for(self._mode)
 
     @property
     def remaining_seconds(self) -> float:
@@ -92,6 +103,60 @@ class BrewdoroTimer:
         self._mode = mode
         self.reset()
         return True
+
+    def update_durations(self, durations: TimerDurations) -> bool:
+        if self.has_active_session:
+            return False
+        self._durations = durations
+        self.reset()
+        return True
+
+    def snapshot(self) -> TimerSnapshot:
+        return TimerSnapshot(
+            mode=self._mode,
+            state=self._state,
+            remaining_seconds=self._remaining_seconds,
+            deadline=self._deadline,
+        )
+
+    def restore(self, snapshot: TimerSnapshot) -> bool:
+        """Restore a saved session and report if it finished while away."""
+        self._mode = snapshot.mode
+        self._deadline = None
+        total_seconds = float(self.total_seconds)
+
+        if snapshot.state is TimerState.RUNNING and snapshot.deadline is not None:
+            self._remaining_seconds = min(
+                total_seconds,
+                max(0.0, snapshot.deadline - self._clock()),
+            )
+            if self._remaining_seconds <= 0:
+                self._finish()
+                return True
+            self._deadline = snapshot.deadline
+            self._state = TimerState.RUNNING
+            return False
+
+        if snapshot.state is TimerState.PAUSED:
+            self._remaining_seconds = min(
+                total_seconds,
+                max(0.0, snapshot.remaining_seconds),
+            )
+            self._state = (
+                TimerState.PAUSED
+                if self._remaining_seconds > 0
+                else TimerState.FINISHED
+            )
+            return False
+
+        if snapshot.state is TimerState.FINISHED:
+            self._remaining_seconds = 0.0
+            self._state = TimerState.FINISHED
+            return False
+
+        self._remaining_seconds = total_seconds
+        self._state = TimerState.IDLE
+        return False
 
     def _refresh_remaining(self) -> None:
         if self._deadline is None:

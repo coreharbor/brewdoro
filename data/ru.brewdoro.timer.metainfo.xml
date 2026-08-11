@@ -40,6 +40,11 @@
   </supports>
   <content_rating type="oars-1.1" />
   <releases>
+    <release version="0.4.0" date="2026-08-11">
+      <description>
+        <p>Adds session recovery, keyboard shortcuts, custom durations, and an optional Pomodoro cycle.</p>
+      </description>
+    </release>
     <release version="0.3.1" date="2026-08-11">
       <description>
         <p>Prevents a crash when a timer finishes on GStreamer-based systems.</p>

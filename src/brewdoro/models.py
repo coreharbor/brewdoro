@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from dataclasses import dataclass
 from enum import Enum, auto
 from typing import Final
 
@@ -34,3 +35,20 @@ TIMER_MODES: Final = (
     TimerMode.SHORT_BREAK,
     TimerMode.LONG_BREAK,
 )
+
+
+@dataclass(frozen=True)
+class TimerDurations:
+    focus_minutes: int = 25
+    short_break_minutes: int = 5
+    long_break_minutes: int = 15
+
+    def minutes_for(self, mode: TimerMode) -> int:
+        return {
+            TimerMode.FOCUS: self.focus_minutes,
+            TimerMode.SHORT_BREAK: self.short_break_minutes,
+            TimerMode.LONG_BREAK: self.long_break_minutes,
+        }[mode]
+
+    def seconds_for(self, mode: TimerMode) -> int:
+        return self.minutes_for(mode) * 60

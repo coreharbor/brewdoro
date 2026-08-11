@@ -2,8 +2,8 @@ from __future__ import annotations
 
 import unittest
 
-from brewdoro.models import TimerMode, TimerState
-from brewdoro.timer import BrewdoroTimer
+from brewdoro.models import TimerDurations, TimerMode, TimerState
+from brewdoro.timer import BrewdoroTimer, TimerSnapshot
 
 
 class FakeClock:
@@ -110,6 +110,58 @@ class BrewdoroTimerTests(unittest.TestCase):
         self.assertTrue(self.timer.tick())
         self.assertFalse(self.timer.tick())
         self.assertFalse(self.timer.pause())
+
+    def test_custom_durations_are_used_by_every_mode(self) -> None:
+        timer = BrewdoroTimer(
+            clock=self.clock,
+            durations=TimerDurations(40, 8, 20),
+        )
+
+        self.assertEqual(timer.total_seconds, 40 * 60)
+        timer.select_mode(TimerMode.SHORT_BREAK)
+        self.assertEqual(timer.total_seconds, 8 * 60)
+        timer.select_mode(TimerMode.LONG_BREAK)
+        self.assertEqual(timer.total_seconds, 20 * 60)
+
+    def test_restores_running_timer_from_absolute_deadline(self) -> None:
+        self.clock.now = 1_000
+        snapshot = TimerSnapshot(
+            mode=TimerMode.SHORT_BREAK,
+            state=TimerState.RUNNING,
+            remaining_seconds=240,
+            deadline=1_120,
+        )
+
+        self.assertFalse(self.timer.restore(snapshot))
+        self.assertEqual(self.timer.mode, TimerMode.SHORT_BREAK)
+        self.assertEqual(self.timer.state, TimerState.RUNNING)
+        self.assertEqual(self.timer.remaining_seconds, 120)
+
+    def test_reports_timer_that_finished_while_application_was_closed(self) -> None:
+        self.clock.now = 1_000
+        snapshot = TimerSnapshot(
+            mode=TimerMode.FOCUS,
+            state=TimerState.RUNNING,
+            remaining_seconds=10,
+            deadline=990,
+        )
+
+        self.assertTrue(self.timer.restore(snapshot))
+        self.assertEqual(self.timer.state, TimerState.FINISHED)
+        self.assertEqual(self.timer.remaining_seconds, 0)
+
+    def test_paused_timer_does_not_advance_while_application_is_closed(self) -> None:
+        self.clock.now = 10_000
+        snapshot = TimerSnapshot(
+            mode=TimerMode.FOCUS,
+            state=TimerState.PAUSED,
+            remaining_seconds=321.5,
+            deadline=None,
+        )
+
+        self.assertFalse(self.timer.restore(snapshot))
+        self.assertEqual(self.timer.state, TimerState.PAUSED)
+        self.assertEqual(self.timer.remaining_seconds, 321.5)
 
 
 if __name__ == "__main__":

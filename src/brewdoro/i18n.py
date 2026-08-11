@@ -44,6 +44,14 @@ class Strings:
     reset: str
     minute_suffix: str
     change_language: str
+    settings: str
+    focus_duration: str
+    short_break_duration: str
+    long_break_duration: str
+    sound: str
+    pomodoro_cycle: str
+    auto_start: str
+    cycle_progress: str
     focus_finished_title: str
     focus_finished_body: str
     break_finished_title: str
@@ -85,6 +93,14 @@ TRANSLATIONS: Final = {
         reset="Reset",
         minute_suffix="min",
         change_language="Change language",
+        settings="Settings",
+        focus_duration="Focus",
+        short_break_duration="Short break",
+        long_break_duration="Long break",
+        sound="Sound",
+        pomodoro_cycle="Pomodoro cycle",
+        auto_start="Auto-start next stage",
+        cycle_progress="Session {position} of 4",
         focus_finished_title="Focus complete",
         focus_finished_body="Time for a short break.",
         break_finished_title="Break complete",
@@ -101,6 +117,14 @@ TRANSLATIONS: Final = {
         reset="Сбросить",
         minute_suffix="мин",
         change_language="Сменить язык",
+        settings="Настройки",
+        focus_duration="Фокус",
+        short_break_duration="Короткий перерыв",
+        long_break_duration="Длинный перерыв",
+        sound="Звук",
+        pomodoro_cycle="Цикл Pomodoro",
+        auto_start="Автозапуск этапа",
+        cycle_progress="Сессия {position} из 4",
         focus_finished_title="Фокус завершён",
         focus_finished_body="Пора немного отдохнуть.",
         break_finished_title="Перерыв завершён",
@@ -117,6 +141,14 @@ TRANSLATIONS: Final = {
         reset="重置",
         minute_suffix="分钟",
         change_language="切换语言",
+        settings="设置",
+        focus_duration="专注",
+        short_break_duration="短休息",
+        long_break_duration="长休息",
+        sound="声音",
+        pomodoro_cycle="番茄循环",
+        auto_start="自动开始下一阶段",
+        cycle_progress="第 {position}/4 次专注",
         focus_finished_title="专注结束",
         focus_finished_body="该休息一下了。",
         break_finished_title="休息结束",

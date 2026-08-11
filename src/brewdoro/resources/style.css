@@ -39,6 +39,34 @@
   background-color: @brewdoro_surface_hover;
 }
 
+.settings-button {
+  min-width: 30px;
+  min-height: 28px;
+  padding: 0;
+  border-radius: 8px;
+  color: @brewdoro_text_secondary;
+}
+
+.settings-button:hover {
+  color: @brewdoro_text_primary;
+  background-color: @brewdoro_surface_hover;
+}
+
+.settings-popover {
+  min-width: 238px;
+}
+
+.settings-title {
+  color: @brewdoro_text_primary;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.settings-row {
+  min-height: 30px;
+  color: @brewdoro_text_secondary;
+}
+
 .language-option {
   min-width: 112px;
   min-height: 30px;
@@ -57,6 +85,11 @@
   font-size: 12px;
   font-weight: 700;
   letter-spacing: 1.6px;
+}
+
+.cycle-label {
+  color: @brewdoro_text_muted;
+  font-size: 11px;
 }
 
 .timer-label {
@@ -136,6 +169,13 @@
 .preset-button:focus-visible,
 .language-button:focus-visible,
 .language-option:focus-visible {
+  outline-color: @brewdoro_focus_ring;
+  outline-style: solid;
+  outline-width: 2px;
+  outline-offset: 2px;
+}
+
+.settings-button:focus-visible {
   outline-color: @brewdoro_focus_ring;
   outline-style: solid;
   outline-width: 2px;

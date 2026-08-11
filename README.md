@@ -12,9 +12,11 @@ session is over.
 
 ## Features
 
-- 25-minute focus sessions
-- 5-minute and 15-minute breaks
+- Focus and break durations that can be adjusted from one small menu
 - Pause, resume and reset
+- Optional four-session Pomodoro cycle with automatic stage changes
+- Session recovery after closing the app or suspending the computer
+- Keyboard shortcuts: `Space`, `R`, and `1` / `2` / `3`
 - Desktop notifications and a completion sound
 - An animated coffee cup that follows the timer
 - English, Russian and Simplified Chinese interface
