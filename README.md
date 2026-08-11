@@ -78,6 +78,8 @@ During a focus session, the coffee gradually drains as the timer approaches zero
 
 Complete your sessions, take your breaks, and repeat.
 
+Press **Reset** once to restart the current timer. When a Pomodoro cycle is in progress, press **Reset session** within three seconds to clear the full cycle.
+
 ## 🛠️ Built with
 
 Brewdoro is built with:

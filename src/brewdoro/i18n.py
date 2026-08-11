@@ -42,6 +42,7 @@ class Strings:
     resume: str
     start_again: str
     reset: str
+    reset_session: str
     minute_suffix: str
     change_language: str
     settings: str
@@ -91,6 +92,7 @@ TRANSLATIONS: Final = {
         resume="Resume",
         start_again="Start again",
         reset="Reset",
+        reset_session="Reset session",
         minute_suffix="min",
         change_language="Change language",
         settings="Settings",
@@ -115,6 +117,7 @@ TRANSLATIONS: Final = {
         resume="Продолжить",
         start_again="Начать снова",
         reset="Сбросить",
+        reset_session="Сбросить сессию",
         minute_suffix="мин",
         change_language="Сменить язык",
         settings="Настройки",
@@ -139,6 +142,7 @@ TRANSLATIONS: Final = {
         resume="继续",
         start_again="重新开始",
         reset="重置",
+        reset_session="重置会话",
         minute_suffix="分钟",
         change_language="切换语言",
         settings="设置",

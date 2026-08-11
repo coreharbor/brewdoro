@@ -23,6 +23,7 @@ class TranslationTests(unittest.TestCase):
                 for state in TimerState:
                     self.assertTrue(strings.primary_button_label(state))
                 self.assertTrue(strings.preset_label(25))
+                self.assertTrue(strings.reset_session)
                 self.assertTrue(strings.settings)
                 self.assertTrue(strings.sound)
                 self.assertIn("2", strings.cycle_progress.format(position=2))

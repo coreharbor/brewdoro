@@ -40,6 +40,11 @@
   </supports>
   <content_rating type="oars-1.1" />
   <releases>
+    <release version="0.4.2" date="2026-08-11">
+      <description>
+        <p>Adds a deliberate second reset press to clear Pomodoro session progress.</p>
+      </description>
+    </release>
     <release version="0.4.1" date="2026-08-11">
       <description>
         <p>Moves the settings button to the left side of the header.</p>
