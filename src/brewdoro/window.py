@@ -1,10 +1,12 @@
 from __future__ import annotations
 
+import logging
 import math
 from typing import Final
 
 import gi
 
+from brewdoro.i18n import Language, LanguageStore, Strings, strings_for
 from brewdoro.models import TIMER_MODES, TimerMode, TimerState
 from brewdoro.notifications import NotificationService
 from brewdoro.sounds import SoundService
@@ -19,6 +21,7 @@ from brewdoro.widgets import CoffeeCup  # noqa: E402
 
 
 TICK_INTERVAL_MS: Final = 100
+LOGGER = logging.getLogger(__name__)
 
 
 class BrewdoroWindow(Adw.ApplicationWindow):
@@ -30,6 +33,7 @@ class BrewdoroWindow(Adw.ApplicationWindow):
         timer: BrewdoroTimer,
         notifications: NotificationService,
         sounds: SoundService,
+        language_store: LanguageStore | None = None,
     ) -> None:
         super().__init__(application=application)
         self.set_title("Brewdoro")
@@ -40,15 +44,22 @@ class BrewdoroWindow(Adw.ApplicationWindow):
         self._notifications = notifications
         self._sounds = sounds
         self._timeout_id: int | None = None
+        self._language_store = language_store or LanguageStore()
+        self._language = self._language_store.load()
+        self._strings: Strings = strings_for(self._language)
 
-        self._mode_label = Gtk.Label(label=self._timer.mode.label)
+        self._mode_label = Gtk.Label()
         self._timer_label = Gtk.Label()
         self._coffee_cup = CoffeeCup()
-        self._primary_button = Gtk.Button(label="Начать")
-        self._reset_button = Gtk.Button(label="Сбросить")
+        self._primary_button = Gtk.Button()
+        self._reset_button = Gtk.Button()
+        self._language_button = Gtk.MenuButton()
+        self._language_popover = Gtk.Popover()
+        self._language_option_buttons: dict[Language, Gtk.Button] = {}
         self._preset_buttons: list[Gtk.ToggleButton] = []
 
         self._build_ui()
+        self._update_text()
         self._update_time_and_cup()
         self.connect("close-request", self._on_close_request)
 
@@ -60,6 +71,7 @@ class BrewdoroWindow(Adw.ApplicationWindow):
         header = Adw.HeaderBar()
         header.add_css_class("flat-header")
         header.set_show_title(False)
+        self._build_language_menu(header)
         root.append(header)
 
         content = Gtk.Box(
@@ -109,7 +121,7 @@ class BrewdoroWindow(Adw.ApplicationWindow):
 
         group_leader: Gtk.ToggleButton | None = None
         for mode in TIMER_MODES:
-            button = Gtk.ToggleButton(label=f"{mode.minutes} мин")
+            button = Gtk.ToggleButton()
             button.add_css_class("preset-button")
             if group_leader is None:
                 group_leader = button
@@ -120,6 +132,45 @@ class BrewdoroWindow(Adw.ApplicationWindow):
             self._preset_buttons.append(button)
 
         self._preset_buttons[0].set_active(True)
+
+    def _build_language_menu(self, header: Adw.HeaderBar) -> None:
+        self._language_button.add_css_class("flat")
+        self._language_button.add_css_class("language-button")
+        self._language_button.set_direction(Gtk.ArrowType.NONE)
+        header.pack_end(self._language_button)
+
+        language_box = Gtk.Box(
+            orientation=Gtk.Orientation.VERTICAL,
+            spacing=2,
+        )
+        language_box.set_margin_top(6)
+        language_box.set_margin_bottom(6)
+        language_box.set_margin_start(6)
+        language_box.set_margin_end(6)
+
+        for language in Language:
+            button = Gtk.Button(label=language.display_name)
+            button.add_css_class("flat")
+            button.add_css_class("language-option")
+            button.connect("clicked", self._on_language_selected, language)
+            language_box.append(button)
+            self._language_option_buttons[language] = button
+
+        self._language_popover.set_child(language_box)
+        self._language_button.set_popover(self._language_popover)
+
+    def _on_language_selected(
+        self,
+        _button: Gtk.Button,
+        language: Language,
+    ) -> None:
+        if language is not self._language:
+            self._language = language
+            self._strings = strings_for(language)
+            if not self._language_store.save(language):
+                LOGGER.warning("Could not save language preference")
+            self._update_text()
+        self._language_popover.popdown()
 
     def _on_primary_clicked(self, _button: Gtk.Button) -> None:
         if self._timer.state is TimerState.RUNNING:
@@ -133,7 +184,7 @@ class BrewdoroWindow(Adw.ApplicationWindow):
         self._remove_timeout()
         self._notifications.withdraw_finished()
         self._update_time_and_cup()
-        self._primary_button.set_label("Пауза")
+        self._update_text()
         self._set_presets_sensitive(False)
         self._timeout_id = GLib.timeout_add(TICK_INTERVAL_MS, self._on_tick)
 
@@ -144,7 +195,7 @@ class BrewdoroWindow(Adw.ApplicationWindow):
         if finished:
             self._show_finished()
             return
-        self._primary_button.set_label("Продолжить")
+        self._update_text()
 
     def _on_tick(self) -> bool:
         if self._timer.state is not TimerState.RUNNING:
@@ -160,9 +211,9 @@ class BrewdoroWindow(Adw.ApplicationWindow):
 
     def _show_finished(self) -> None:
         self._remove_timeout()
-        self._primary_button.set_label("Начать снова")
+        self._update_text()
         self._set_presets_sensitive(True)
-        self._notifications.send_finished(self._timer.mode)
+        self._notifications.send_finished(self._timer.mode, self._language)
         self._sounds.play_finished()
 
     def _on_reset_clicked(self, _button: Gtk.Button) -> None:
@@ -170,7 +221,7 @@ class BrewdoroWindow(Adw.ApplicationWindow):
         self._notifications.withdraw_finished()
         self._timer.reset()
         self._update_time_and_cup()
-        self._primary_button.set_label("Начать")
+        self._update_text()
         self._set_presets_sensitive(True)
 
     def _on_preset_toggled(
@@ -180,9 +231,26 @@ class BrewdoroWindow(Adw.ApplicationWindow):
     ) -> None:
         if not button.get_active() or not self._timer.select_mode(mode):
             return
-        self._mode_label.set_label(mode.label)
+        self._update_text()
         self._update_time_and_cup()
-        self._primary_button.set_label("Начать")
+
+    def _update_text(self) -> None:
+        self._mode_label.set_label(self._strings.mode_label(self._timer.mode))
+        self._primary_button.set_label(
+            self._strings.primary_button_label(self._timer.state),
+        )
+        self._reset_button.set_label(self._strings.reset)
+        self._language_button.set_label(self._language.short_label)
+        self._language_button.set_tooltip_text(self._strings.change_language)
+
+        for button, mode in zip(self._preset_buttons, TIMER_MODES, strict=True):
+            button.set_label(self._strings.preset_label(mode.minutes))
+
+        for language, button in self._language_option_buttons.items():
+            if language is self._language:
+                button.add_css_class("selected-language")
+            else:
+                button.remove_css_class("selected-language")
 
     def _update_time_and_cup(self) -> None:
         visible_seconds = max(0, math.ceil(self._timer.remaining_seconds))

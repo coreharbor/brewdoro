@@ -24,6 +24,34 @@
   box-shadow: none;
 }
 
+.language-button {
+  min-width: 34px;
+  min-height: 28px;
+  padding: 0 7px;
+  border-radius: 8px;
+  color: @brewdoro_text_secondary;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.language-button:hover {
+  color: @brewdoro_text_primary;
+  background-color: @brewdoro_surface_hover;
+}
+
+.language-option {
+  min-width: 112px;
+  min-height: 30px;
+  padding: 0 10px;
+  border-radius: 7px;
+}
+
+.language-option.selected-language {
+  color: @brewdoro_text_primary;
+  background-color: alpha(@brewdoro_accent_bg, 0.28);
+  font-weight: 700;
+}
+
 .mode-label {
   color: @brewdoro_text_secondary;
   font-size: 12px;
@@ -105,7 +133,9 @@
 
 .primary-button:focus-visible,
 .reset-button:focus-visible,
-.preset-button:focus-visible {
+.preset-button:focus-visible,
+.language-button:focus-visible,
+.language-option:focus-visible {
   outline-color: @brewdoro_focus_ring;
   outline-style: solid;
   outline-width: 2px;

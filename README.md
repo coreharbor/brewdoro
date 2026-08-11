@@ -17,6 +17,7 @@ session is over.
 - Pause, resume and reset
 - Desktop notifications and a completion sound
 - An animated coffee cup that follows the timer
+- English, Russian and Simplified Chinese interface
 
 ## Install with Flatpak
 

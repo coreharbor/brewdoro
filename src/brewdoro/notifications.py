@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import gi
 
+from brewdoro.i18n import Language, strings_for
 from brewdoro.models import TimerMode
 
 gi.require_version("Gio", "2.0")
@@ -16,13 +17,8 @@ class NotificationService:
     def __init__(self, application: Gio.Application) -> None:
         self._application = application
 
-    def send_finished(self, mode: TimerMode) -> None:
-        if mode.is_focus:
-            title = "Фокус завершён"
-            body = "Пора немного отдохнуть."
-        else:
-            title = "Перерыв завершён"
-            body = "Можно возвращаться к работе."
+    def send_finished(self, mode: TimerMode, language: Language) -> None:
+        title, body = strings_for(language).finished_notification(mode)
 
         notification = Gio.Notification.new(title)
         notification.set_body(body)
