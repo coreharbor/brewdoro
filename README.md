@@ -1,72 +1,133 @@
-# Brewdoro
+<div align="center">
 
-[Русская версия](README.ru.md)
+# ☕ Brewdoro
 
-Brewdoro is a small Pomodoro timer for Linux, built with Python, GTK 4 and
-Libadwaita. It stays out of the way while you work and lets you know when the
-session is over.
+**A minimal Pomodoro timer for Linux with an animated coffee cup.**
 
-<p align="center">
-  <img src="docs/images/brewdoro.png" alt="Brewdoro focus timer" width="353">
-</p>
+**Focus. Brew. Repeat.**
 
-## Features
+<br>
 
-- Focus and break durations that can be adjusted from one small menu
-- Pause, resume and reset
-- Optional four-session Pomodoro cycle with automatic stage changes
-- Session recovery after closing the app or suspending the computer
-- Keyboard shortcuts: `Space`, `R`, and `1` / `2` / `3`
-- Desktop notifications and a completion sound
-- An animated coffee cup that follows the timer
-- English, Russian and Simplified Chinese interface
+<img src="docs/images/social-preview.jpg" alt="Brewdoro — Pomodoro timer for Linux" width="800">
 
-## Install with Flatpak
+</div>
 
-Install `flatpak` and `flatpak-builder`, then run:
+## About
+
+**Brewdoro** is a small and distraction-free Pomodoro timer designed for the Linux desktop.
+
+Instead of another progress bar, Brewdoro uses a coffee cup: while you focus, the coffee slowly disappears. During your break, the cup fills back up.
+
+No accounts. No clutter. Just a timer, a cup of coffee, and your work.
+
+## ✨ Features
+
+- ☕ Animated coffee cup that visualizes timer progress
+- 🎯 Focus and break cycles
+- 🔁 Pomodoro session tracking
+- 🌙 Minimal dark interface
+- 🐧 Designed specifically for Linux
+- 🎨 Native GTK 4 + Libadwaita UI
+- 🌍 English, Russian and Chinese localization
+- ⚡ Lightweight and distraction-free
+
+## 📸 Screenshot
+
+<div align="center">
+
+<img src="docs/images/brewdoro.png" alt="Brewdoro application screenshot" width="420">
+
+</div>
+
+## 📦 Installation
+
+### Flatpak
+
+Brewdoro is not on Flathub yet, but you can build and install it locally with Flatpak.
+
+First install the required runtime and SDK:
 
 ```bash
-flatpak remote-add --if-not-exists flathub \
-  https://dl.flathub.org/repo/flathub.flatpakrepo
 flatpak install flathub org.gnome.Platform//50 org.gnome.Sdk//50
+```
 
+Clone Brewdoro:
+
+```bash
 git clone https://github.com/coreharbor/brewdoro.git
 cd brewdoro
-flatpak-builder --user --install --force-clean \
-  .flatpak-build flatpak/ru.brewdoro.timer.yml
+```
+
+Build and install:
+
+```bash
+flatpak-builder --user --install --force-clean build-dir flatpak/ru.brewdoro.timer.yml
+```
+
+Run:
+
+```bash
 flatpak run ru.brewdoro.timer
 ```
 
-The Flatpak package can show notifications and play sound. It has no access to
-the network or your personal files.
+## 🚀 Usage
 
-## Run from source on Ubuntu 24.04+
+Open Brewdoro and press **Start**.
+
+During a focus session, the coffee gradually drains as the timer approaches zero. When it’s time for a break, the cup starts filling again.
+
+Complete your sessions, take your breaks, and repeat.
+
+## 🛠️ Built with
+
+Brewdoro is built with:
+
+- **Python**
+- **GTK 4**
+- **Libadwaita**
+- **Flatpak**
+
+The goal is to keep the application small, native-looking and comfortable to use on modern Linux desktops.
+
+## 🌍 Translations
+
+Brewdoro currently supports:
+
+- 🇬🇧 English
+- 🇷🇺 Russian
+- 🇨🇳 Chinese
+
+More translations are welcome.
+
+Read the [Russian README](README.ru.md).
+
+## 🧑‍💻 Development
+
+Clone the repository:
 
 ```bash
-sudo apt update
-sudo apt install python3 python3-venv python3-gi python3-cairo python3-gi-cairo \
-  gir1.2-gtk-4.0 gir1.2-adw-1
-
 git clone https://github.com/coreharbor/brewdoro.git
 cd brewdoro
-python3 -m venv --system-site-packages .venv
-source .venv/bin/activate
-python -m pip install --editable .
-make install-user
-brewdoro
 ```
 
-## Development
+The project source code lives in [`src/brewdoro/`](src/brewdoro/).
 
-Run the checks with:
+Flatpak packaging files are located in [`flatpak/`](flatpak/).
 
-```bash
-make check
-```
+Application metadata and desktop integration files are located in [`data/`](data/).
 
-The timer model does not depend on GTK, so its tests can run without a desktop
-session.
+## 🤝 Contributing
 
-## License
+Contributions are welcome.
 
-[MIT](LICENSE)
+If you find a bug, have an idea for Brewdoro, or want to improve a translation, feel free to open an issue or submit a pull request.
+
+## ⭐ Support Brewdoro
+
+If Brewdoro is useful to you, consider giving the repository a **star**. It helps more Linux users discover the project.
+
+<div align="center">
+
+☕ **Focus. Brew. Repeat.**
+
+</div>
