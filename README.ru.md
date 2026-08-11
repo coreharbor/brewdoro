@@ -5,6 +5,10 @@
 Brewdoro — небольшой Pomodoro-таймер для Linux на Python, GTK 4 и Libadwaita.
 Он не мешает работать и сообщает, когда время закончилось.
 
+<p align="center">
+  <img src="docs/images/brewdoro.jpg" alt="Таймер фокусировки Brewdoro" width="353">
+</p>
+
 ## Возможности
 
 - Фокус-сессия на 25 минут

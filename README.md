@@ -6,6 +6,10 @@ Brewdoro is a small Pomodoro timer for Linux, built with Python, GTK 4 and
 Libadwaita. It stays out of the way while you work and lets you know when the
 session is over.
 
+<p align="center">
+  <img src="docs/images/brewdoro.jpg" alt="Brewdoro focus timer" width="353">
+</p>
+
 ## Features
 
 - 25-minute focus sessions
