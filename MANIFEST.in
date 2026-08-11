@@ -1,5 +1,6 @@
 include LICENSE
 include Makefile
+include README.ru.md
 recursive-include data *.desktop *.xml *.svg
 recursive-include flatpak *.yml
 recursive-include src/brewdoro/resources *.css *.wav
