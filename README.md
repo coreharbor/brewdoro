@@ -78,7 +78,7 @@ During a focus session, the coffee gradually drains as the timer approaches zero
 
 Complete your sessions, take your breaks, and repeat.
 
-Press **Reset** once to restart the current timer. When a Pomodoro cycle is in progress, press **Reset session** within three seconds to clear the full cycle.
+Press **Reset** to restart the current timer. If a Pomodoro cycle is in progress and the timer is already reset, the button changes to **Reset session** and clears the full cycle.
 
 ## 🛠️ Built with
 

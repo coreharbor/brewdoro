@@ -27,6 +27,17 @@ class BrewdoroTimerTests(unittest.TestCase):
         self.assertEqual(self.timer.state, TimerState.IDLE)
         self.assertEqual(self.timer.remaining_seconds, 25 * 60)
         self.assertEqual(self.timer.liquid_level, 1.0)
+        self.assertTrue(self.timer.is_reset)
+
+    def test_timer_is_only_reset_when_idle_at_full_duration(self) -> None:
+        self.timer.start()
+        self.assertFalse(self.timer.is_reset)
+
+        self.timer.pause()
+        self.assertFalse(self.timer.is_reset)
+
+        self.timer.reset()
+        self.assertTrue(self.timer.is_reset)
 
     def test_tick_uses_deadline_instead_of_counting_callbacks(self) -> None:
         self.timer.start()
@@ -162,6 +173,18 @@ class BrewdoroTimerTests(unittest.TestCase):
         self.assertFalse(self.timer.restore(snapshot))
         self.assertEqual(self.timer.state, TimerState.PAUSED)
         self.assertEqual(self.timer.remaining_seconds, 321.5)
+
+    def test_restored_idle_timer_is_reset(self) -> None:
+        snapshot = TimerSnapshot(
+            mode=TimerMode.SHORT_BREAK,
+            state=TimerState.IDLE,
+            remaining_seconds=123,
+            deadline=None,
+        )
+
+        self.assertFalse(self.timer.restore(snapshot))
+        self.assertTrue(self.timer.is_reset)
+        self.assertEqual(self.timer.remaining_seconds, self.timer.total_seconds)
 
 
 if __name__ == "__main__":

@@ -52,6 +52,13 @@ class BrewdoroTimer:
         return self._state in (TimerState.RUNNING, TimerState.PAUSED)
 
     @property
+    def is_reset(self) -> bool:
+        return (
+            self._state is TimerState.IDLE
+            and self._remaining_seconds == self.total_seconds
+        )
+
+    @property
     def liquid_level(self) -> float:
         remaining_ratio = min(
             1.0,

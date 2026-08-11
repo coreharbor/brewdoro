@@ -40,6 +40,11 @@
   </supports>
   <content_rating type="oars-1.1" />
   <releases>
+    <release version="0.4.3" date="2026-08-11">
+      <description>
+        <p>Lets an already reset timer clear Pomodoro session progress directly.</p>
+      </description>
+    </release>
     <release version="0.4.2" date="2026-08-11">
       <description>
         <p>Adds a deliberate second reset press to clear Pomodoro session progress.</p>

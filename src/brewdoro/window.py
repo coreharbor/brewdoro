@@ -10,7 +10,6 @@ from brewdoro.cycle import PomodoroCycle
 from brewdoro.i18n import Language, LanguageStore, Strings, strings_for
 from brewdoro.models import TIMER_MODES, TimerMode, TimerState
 from brewdoro.notifications import NotificationService
-from brewdoro.reset import ResetSequence, ResetTarget
 from brewdoro.session import SavedSession, SessionStore
 from brewdoro.settings import AppSettings, SettingsStore
 from brewdoro.sounds import SoundService
@@ -26,7 +25,6 @@ from brewdoro.widgets.settings_menu import SettingsMenu  # noqa: E402
 
 
 TICK_INTERVAL_MS: Final = 100
-RESET_CONFIRMATION_MS: Final = 3_000
 LOGGER = logging.getLogger(__name__)
 
 
@@ -62,8 +60,6 @@ class BrewdoroWindow(Adw.ApplicationWindow):
         self._settings = settings or self._settings_store.load()
         self._session_store = session_store or SessionStore()
         self._cycle = cycle or PomodoroCycle()
-        self._reset_sequence = ResetSequence()
-        self._reset_confirmation_timeout_id: int | None = None
         self._syncing_presets = False
 
         self._mode_label = Gtk.Label()
@@ -206,7 +202,6 @@ class BrewdoroWindow(Adw.ApplicationWindow):
         self._language_popover.popdown()
 
     def _on_settings_changed(self, settings: AppSettings) -> None:
-        self._cancel_session_reset()
         durations_changed = settings.durations != self._settings.durations
         cycle_was_disabled = self._settings.cycle_enabled and not settings.cycle_enabled
         self._settings = settings
@@ -227,7 +222,6 @@ class BrewdoroWindow(Adw.ApplicationWindow):
             self._start_timer()
 
     def _start_timer(self, withdraw_notification: bool = True) -> None:
-        self._cancel_session_reset()
         if not self._timer.start():
             return
         self._remove_timeout()
@@ -287,17 +281,12 @@ class BrewdoroWindow(Adw.ApplicationWindow):
         return GLib.SOURCE_REMOVE
 
     def _on_reset_clicked(self, _button: Gtk.Button | None) -> None:
-        reset_target = self._reset_sequence.press(
-            self._settings.cycle_enabled and self._cycle.completed_focus_sessions > 0,
-        )
         self._remove_timeout()
         self._notifications.withdraw_finished()
-        self._timer.reset()
-        if reset_target is ResetTarget.SESSION:
+        if self._can_reset_session():
             self._cycle.reset()
-            self._remove_reset_confirmation_timeout()
-        elif self._reset_sequence.session_pending:
-            self._schedule_reset_confirmation_timeout()
+        else:
+            self._timer.reset()
         self._update_time_and_cup()
         self._update_text()
         self._set_controls_sensitive()
@@ -314,7 +303,6 @@ class BrewdoroWindow(Adw.ApplicationWindow):
             or not self._timer.select_mode(mode)
         ):
             return
-        self._cancel_session_reset()
         self._update_text()
         self._update_time_and_cup()
         self._save_session()
@@ -435,40 +423,23 @@ class BrewdoroWindow(Adw.ApplicationWindow):
             GLib.source_remove(self._timeout_id)
             self._timeout_id = None
 
-    def _schedule_reset_confirmation_timeout(self) -> None:
-        self._remove_reset_confirmation_timeout()
-        self._reset_confirmation_timeout_id = GLib.timeout_add(
-            RESET_CONFIRMATION_MS,
-            self._on_reset_confirmation_timeout,
-        )
-
-    def _on_reset_confirmation_timeout(self) -> bool:
-        self._reset_confirmation_timeout_id = None
-        self._reset_sequence.cancel()
-        self._update_reset_button_label()
-        return GLib.SOURCE_REMOVE
-
-    def _cancel_session_reset(self) -> None:
-        self._reset_sequence.cancel()
-        self._remove_reset_confirmation_timeout()
-        self._update_reset_button_label()
-
-    def _remove_reset_confirmation_timeout(self) -> None:
-        if self._reset_confirmation_timeout_id is not None:
-            GLib.source_remove(self._reset_confirmation_timeout_id)
-            self._reset_confirmation_timeout_id = None
-
     def _update_reset_button_label(self) -> None:
         label = (
             self._strings.reset_session
-            if self._reset_sequence.session_pending
+            if self._can_reset_session()
             else self._strings.reset
         )
         self._reset_button.set_label(label)
 
+    def _can_reset_session(self) -> bool:
+        return (
+            self._settings.cycle_enabled
+            and self._cycle.completed_focus_sessions > 0
+            and self._timer.is_reset
+        )
+
     def _on_close_request(self, _window: Adw.ApplicationWindow) -> bool:
         self._save_session()
         self._remove_timeout()
-        self._remove_reset_confirmation_timeout()
         self._sounds.close()
         return False
