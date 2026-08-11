@@ -6,7 +6,7 @@ Brewdoro — небольшой Pomodoro-таймер для Linux на Python, 
 Он не мешает работать и сообщает, когда время закончилось.
 
 <p align="center">
-  <img src="docs/images/brewdoro.jpg" alt="Таймер фокусировки Brewdoro" width="353">
+  <img src="docs/images/brewdoro.png" alt="Таймер фокусировки Brewdoro" width="353">
 </p>
 
 ## Возможности

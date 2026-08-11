@@ -7,7 +7,7 @@ Libadwaita. It stays out of the way while you work and lets you know when the
 session is over.
 
 <p align="center">
-  <img src="docs/images/brewdoro.jpg" alt="Brewdoro focus timer" width="353">
+  <img src="docs/images/brewdoro.png" alt="Brewdoro focus timer" width="353">
 </p>
 
 ## Features
