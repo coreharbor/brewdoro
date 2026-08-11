@@ -4,39 +4,34 @@ import importlib
 import sys
 import types
 import unittest
+from contextlib import nullcontext
+from pathlib import Path
 from unittest import mock
 
 
-class FakeBytes:
-    @staticmethod
-    def new(data: bytes) -> bytes:
-        return data
-
-
-class FakeMemoryInputStream:
-    def __init__(self, data: bytes) -> None:
-        self.data = data
-
-    @classmethod
-    def new_from_bytes(cls, data: bytes) -> FakeMemoryInputStream:
-        return cls(data)
-
-
 class FakeMediaFile:
-    def __init__(self, stream: FakeMemoryInputStream) -> None:
-        self.stream = stream
+    def __init__(self, filename: str) -> None:
+        self.filename = filename
         self.volume = 0.0
-        self.played = False
+        self.play_count = 0
+        self.paused = False
+        self.cleared = False
 
     @classmethod
-    def new_for_input_stream(cls, stream: FakeMemoryInputStream) -> FakeMediaFile:
-        return cls(stream)
+    def new_for_filename(cls, filename: str) -> FakeMediaFile:
+        return cls(filename)
 
     def set_volume(self, volume: float) -> None:
         self.volume = volume
 
     def play(self) -> None:
-        self.played = True
+        self.play_count += 1
+
+    def pause(self) -> None:
+        self.paused = True
+
+    def clear(self) -> None:
+        self.cleared = True
 
 
 def import_sounds_with_fake_gtk() -> types.ModuleType:
@@ -44,8 +39,6 @@ def import_sounds_with_fake_gtk() -> types.ModuleType:
     gi.require_version = lambda *_args: None
 
     repository = types.ModuleType("gi.repository")
-    repository.Gio = types.SimpleNamespace(MemoryInputStream=FakeMemoryInputStream)
-    repository.GLib = types.SimpleNamespace(Bytes=FakeBytes)
     repository.Gtk = types.SimpleNamespace(MediaFile=FakeMediaFile)
     gi.repository = repository
 
@@ -58,18 +51,51 @@ def import_sounds_with_fake_gtk() -> types.ModuleType:
 
 
 class SoundServiceTests(unittest.TestCase):
-    def test_keeps_input_stream_alive_during_async_playback(self) -> None:
+    def test_uses_filename_instead_of_crash_prone_input_stream(self) -> None:
         sounds = import_sounds_with_fake_gtk()
         sound_resource = mock.Mock()
-        sound_resource.joinpath.return_value.read_bytes.return_value = b"wave"
+        sound_resource.joinpath.return_value = mock.sentinel.sound_file
+        sound_path = Path("/opt/brewdoro/finished.wav")
 
-        with mock.patch.object(sounds.resources, "files", return_value=sound_resource):
+        with (
+            mock.patch.object(sounds.resources, "files", return_value=sound_resource),
+            mock.patch.object(
+                sounds.resources,
+                "as_file",
+                return_value=nullcontext(sound_path),
+            ),
+        ):
             service = sounds.SoundService()
             service.play_finished()
+            service.play_finished()
 
-        self.assertIs(service._player.stream, service._stream)
-        self.assertEqual(service._stream.data, b"wave")
-        self.assertTrue(service._player.played)
+        self.assertEqual(service._player.filename, str(sound_path))
+        self.assertEqual(service._player.play_count, 2)
+        self.assertEqual(service._player.volume, sounds.FINISHED_VOLUME)
+
+    def test_closes_player_before_releasing_sound_file(self) -> None:
+        sounds = import_sounds_with_fake_gtk()
+        sound_resource = mock.Mock()
+        sound_resource.joinpath.return_value = mock.sentinel.sound_file
+        sound_path = Path("/opt/brewdoro/finished.wav")
+
+        with (
+            mock.patch.object(sounds.resources, "files", return_value=sound_resource),
+            mock.patch.object(
+                sounds.resources,
+                "as_file",
+                return_value=nullcontext(sound_path),
+            ),
+        ):
+            service = sounds.SoundService()
+            service.play_finished()
+            player = service._player
+            service.close()
+
+        self.assertTrue(player.paused)
+        self.assertTrue(player.cleared)
+        self.assertIsNone(service._player)
+        self.assertIsNone(service._sound_path)
 
 
 if __name__ == "__main__":

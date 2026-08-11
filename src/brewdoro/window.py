@@ -269,4 +269,5 @@ class BrewdoroWindow(Adw.ApplicationWindow):
 
     def _on_close_request(self, _window: Adw.ApplicationWindow) -> bool:
         self._remove_timeout()
+        self._sounds.close()
         return False
