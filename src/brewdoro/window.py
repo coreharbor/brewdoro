@@ -98,7 +98,7 @@ class BrewdoroWindow(Adw.ApplicationWindow):
         header.add_css_class("flat-header")
         header.set_show_title(False)
         self._build_language_menu(header)
-        header.pack_end(self._settings_menu)
+        header.pack_start(self._settings_menu)
         root.append(header)
 
         content = Gtk.Box(
