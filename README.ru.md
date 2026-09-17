@@ -48,7 +48,7 @@ Brewdoro пока нет во Flathub, но приложение можно со
 Сначала установите среду и SDK:
 
 ```bash
-flatpak install flathub org.gnome.Platform//50 org.gnome.Sdk//50
+flatpak install flathub org.gnome.Platform//51 org.gnome.Sdk//51
 ```
 
 Клонируйте репозиторий:

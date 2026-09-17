@@ -8,3 +8,8 @@ dist/
 .mypy_cache/
 .flatpak-builder/
 .flatpak-build/
+repo/
+*.flatpak
+flatpak_app/
+build-dir/
+builddir/

@@ -22,21 +22,10 @@ modules:
       - install -Dm0644 data/icons/hicolor/scalable/apps/io.github.coreharbor.Brewdoro.svg ${FLATPAK_DEST}/share/icons/hicolor/scalable/apps/io.github.coreharbor.Brewdoro.svg
       - install -Dm0644 LICENSE ${FLATPAK_DEST}/share/licenses/io.github.coreharbor.Brewdoro/LICENSE
     sources:
-      - type: dir
-        path: ..
-        skip:
-          - .git
-          - .venv
-          - .mypy_cache
-          - .ruff_cache
-          - .flatpak-builder
-          - .flatpak-build
-          - flatpak_app
-          - repo
-          - build-dir
-          - builddir
-          - "*.flatpak"
-          - build
-          - dist
-          - "*.egg-info"
-          - __pycache__
+      - type: git
+        url: https://github.com/coreharbor/brewdoro.git
+        tag: v0.5.0
+        commit: 12ed866b1fcd2fe8679b3418ae954bfafd6ca348
+        x-checker-data:
+          type: git
+          tag-pattern: ^v([0-9]+\.[0-9]+\.[0-9]+)$
