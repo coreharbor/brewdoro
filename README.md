@@ -48,7 +48,7 @@ Brewdoro is not on Flathub yet, but you can build and install it locally with Fl
 First install the required runtime and SDK:
 
 ```bash
-flatpak install flathub org.gnome.Platform//50 org.gnome.Sdk//50
+flatpak install flathub org.gnome.Platform//51 org.gnome.Sdk//51
 ```
 
 Clone Brewdoro:

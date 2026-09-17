@@ -1,0 +1,45 @@
+name: Flatpak
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: ${{ matrix.source }} / ${{ matrix.platform.arch }}
+    strategy:
+      fail-fast: false
+      matrix:
+        source: [flatpak, flathub]
+        platform:
+          - arch: x86_64
+            runner: ubuntu-24.04
+          - arch: aarch64
+            runner: ubuntu-24.04-arm
+    runs-on: ${{ matrix.platform.runner }}
+    container:
+      # The GNOME 51 image is not published yet. The action installs the
+      # GNOME 51 runtime and SDK requested by the manifest from Flathub.
+      image: ghcr.io/flathub-infra/flatpak-github-actions:gnome-50
+      options: --privileged
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - name: Validate release manifest
+        if: matrix.source == 'flathub'
+        run: flatpak-builder-lint manifest flathub/io.github.coreharbor.Brewdoro.yml
+      - name: Validate AppStream
+        run: flatpak-builder-lint appstream data/io.github.coreharbor.Brewdoro.metainfo.xml
+      - uses: flatpak/flatpak-github-actions/flatpak-builder@0fadf5d65cdfbdb9c94c7a2f3637c41206cc1a70 # v6
+        with:
+          manifest-path: ${{ matrix.source }}/io.github.coreharbor.Brewdoro.yml
+          arch: ${{ matrix.platform.arch }}
+          bundle: brewdoro-${{ matrix.source }}-${{ matrix.platform.arch }}.flatpak
+          mirror-screenshots-url: https://dl.flathub.org/media
+          artifact-name: brewdoro-${{ matrix.source }}-${{ matrix.platform.arch }}
+          cache-key: brewdoro-${{ matrix.source }}-${{ matrix.platform.arch }}-${{ github.sha }}
+      - name: Validate exported package
+        run: flatpak-builder-lint repo repo

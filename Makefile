@@ -1,5 +1,6 @@
 VENV ?= .venv
 PYTHON ?= $(VENV)/bin/python
+RUFF ?= $(VENV)/bin/ruff
 FLATPAK_BUILD_DIR ?= .flatpak-build
 APP_ID := io.github.coreharbor.Brewdoro
 LEGACY_APP_IDS := ru.brewdoro.timer ru.pomidor.timer
@@ -14,8 +15,8 @@ test:
 
 check: test
 	$(PYTHON) -m compileall -q src tests
-	ruff check src tests
-	ruff format --check src tests
+	$(RUFF) check src tests
+	$(RUFF) format --check src tests
 	desktop-file-validate data/$(APP_ID).desktop
 	appstreamcli validate --no-net --override=url-homepage-missing=info \
 		data/$(APP_ID).metainfo.xml

@@ -5,12 +5,12 @@ import math
 import cairo
 import gi
 
+from brewdoro.coffee_geometry import draw_liquid_path
+
 gi.require_version("Gtk", "4.0")
 gi.require_foreign("cairo")
 
 from gi.repository import Gtk  # noqa: E402
-
-from brewdoro.coffee_geometry import draw_liquid_path
 
 
 class CoffeeCup(Gtk.DrawingArea):

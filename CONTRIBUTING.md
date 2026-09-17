@@ -27,7 +27,7 @@ git clone https://github.com/coreharbor/brewdoro.git
 cd brewdoro
 python3 -m venv --system-site-packages .venv
 source .venv/bin/activate
-python -m pip install --editable . ruff
+python -m pip install --editable . -r requirements-dev.txt
 ```
 
 Run Brewdoro from the repository:
@@ -45,3 +45,6 @@ make check
 ```
 
 Add or update tests when behavior changes. In the pull request, briefly describe what changed, why it changed and how you tested it.
+
+See [Flathub preparation](docs/FLATHUB.md) for the release manifest, sandbox
+checks, and the steps the maintainer must complete before submitting the app.
